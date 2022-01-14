@@ -5,24 +5,30 @@ echo "Installing homebrew (mac package manager)"
 
 echo "Brew installing various dependencies"
 brew update
-brew install nginx --with-passenger passenger wget tree openssh redis docker openssl ffmpeg  imagemagick htop postgres tmux vim jq rbenv the_silver_searcher ack nvm fzf mysql v8 elasticsearch telnet mosh
 
-# This is required for my tmux conf setup to allow things like pbcopy / paste to work with tmux
-# https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard
-brew install reattach-to-user-namespace
+# install bash 5 and set as default shell
+brew install bash
+sudo echo "/usr/local/bin/bash" >> /etc/shells
+chsh -s /usr/local/bin/bash
 
-# use brew cask for install applications https://caskroom.github.io/ 
-brew cask install gimp slack docker sequel-pro java 
+# version manager
+brew install asdf
 
-# https://github.com/rbenv/rbenv#homebrew-on-macos
-# installing rbenv needs this added to specific rc file 
-echo 'eval "$(rbenv init -)"' >> ~/.zshrc
+asdf plugin add java
+asdf install java openjdk-11
+asdf global java openjdk-11
 
-echo 'export NVM_DIR=~/.nvm' >> ~/.zshrc
-echo 'source $(brew --prefix nvm)/nvm.sh' >> ~/.zshrc
+brew install wget tree openssh openssl ffmpeg imagemagick htop tmux vim jq fzf telnet ripgrep docker neovim bat fd exa z bash bash-completion@2 gh gimp alacritty gpg2
+brew install clojure/tools/clojure clojure-lsp/brew/clojure-lsp-native borkdude/brew/clj-kondo
 
-# instlal fzf - fuzzry line completion
+asdf plugin add nodejs
+asdf install nodejs latest 
+asdf global nodejs latest
+
+brew install yarn
+
+# install fzf - fuzzy line completion
 $(brew --prefix)/opt/fzf/install
 
-source ~/.zshrc
+source ~/.bashrc
 

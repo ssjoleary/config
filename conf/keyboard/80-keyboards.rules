@@ -1,2 +1,0 @@
-SUBSYSTEM=="input", ATTRS{product}=="Akko keyboard", ACTION=="add", RUN+="/usr/bin/sudo -u mike /home/mike/working/config/conf/keyboard/keyboard-lock.sh" 
-   

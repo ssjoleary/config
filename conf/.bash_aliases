@@ -1,4 +1,3 @@
-:
 ### Alias for git 
 alias gco="git checkout "
 
@@ -34,10 +33,6 @@ alias server="python -m SimpleHTTPServer 8001"
 # List ssh hosts
 alias hosts="cat ~/.ssh/config | grep 'Host '"
 
-# Can't ever remember clipboard copy or paste with linux so aliasing to mac ones :(
-alias pbcopy="xclip -sel clip"
-alias pbpaste=" xclip -out -sel clip"
-
 # we usually prefeix commit messages with the branch name.  This does that.
 alias gcm=__gcm
 
@@ -46,120 +41,103 @@ function __gcm {
  git commit -m "$BRANCH_NAME: $1"
 }
 
-
-# Often I need to find which branches got merged into master between two tags.  This takes two tags and looks at the difference.
-function __tagdiff {                                                                
-     git log --pretty=format:"%h%x09%an%x09%ad%x09%s" $1..$2 | grep "into 'master'" | sed -E "s/.*Merge branch '(.*)' into 'master'/\1/"
-} 
-
-alias tagdiff=__tagdiff
-
-
-# Checks for the latest branches - lists them in order of last updated with a number beside it
-function __gb {
-    ~/latest-branches.sh
-}
-
-alias gb=__gb
-
-# Checksout the nth branch listed by the gb command
-function __gcb {
-   git for-each-ref --sort=-committerdate refs/heads/ | sed "${1}q;d" | sed -E "s/.*refs\/heads\/(.*)/\1/g" | xargs git checkout
-}
-
-alias gcb=__gcb
-
-# Often the pom.xml file is updated in dev to reference a front end snapshot jar.  Generally we don't want to commit this. Yes when commiting we should add only a couple of 
-# files at a time but often only one or two files HAVE changed so running git add .  makes sense.  This file needs to be commited though so shouldn't be added to the .gitignore
-## OLD 
-#function __ga {
-#   git add .
-#   git reset ecom-cms-webapp/pom.xml
-#   git status
-#}
-
-# Often want to add files matching part of a pattern - here can match with part of their name.  e.g. `ga page_cont` will add page_controller
-# git statu after to double check waht's been added.
-function __ga {
-  git add "*$1*"
-  git status
-}
-
-alias ga=__ga
-
 # Pretty tree for git log
 alias lg='git log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%ce %cr)" --abbrev-commit --date=relative'
-
-
-### Alias for command line
-# I always look at my history
-alias hg="history | grep "
 
 # Quick way to check ip address
 alias ip="ifconfig | grep -oEi 'inet\s(.*)\snetmask.*broadcast' | cut -d ' '  -f2"
 
-
-# Ruby short cuts
-alias be="bundle exec "
-alias st="bundle exec foreman start"
-
-# Formatting outputs with line numvers
-alias nos="awk '{print NR \":\" \$1}'"
-
-# Create pr for current branch vs master
-alias pr=__pr
-
-function __pr {
-  #  # functionality for dynamic sprint branch reading - now just go off master
-  #  git fetch
-  #  echo "Type branch you are coming off - most likely:"
-  #  git branch -a | grep CX-sprint | sort | tail -n 1 | sed -e 's~remotes/origin/~~'
-  #read branch  - used to have this when entering 
-  branch="master"
-  git remote -v | grep fetch | sed -e 's~.\+:\(.\+\)\..\+~https://github.com/\1/compare/'$(echo $branch)'...'$(git rev-parse --abbrev-ref HEAD)'~' | xclip -sel clip
-}
-
-# Use when trying to get a line from a long list.  First pipe to 'nos' to get the line number.
-# e.g.  git diff master --name-only | nos 
-#       git diff master --name-only | line 7
-function __line {
-  tail -$1 | head -n 1
-}
- 
-alias line=__line
-
-# Sometimes accidentally detach from tmux - want a quick way to get back in"
-alias tx="tmux attach"
-
-# I mean i never remember and it seems such an obvious alias! 
-alias open="xdg-open"
-
-# Because my fingers can never spell ~herkou~ heroku 
-alias herkou="heroku"
-
-# for plugging in remote keyboard - TODO - path is britthle - need to setup symlink properly
-alias kb="~/.mh_config/setup-keyboard.sh"
-
 ## Not an alias but sets vim config - TODO put in seperate env variable file for inclusion'
-export VISUAL=vim
+export VISUAL=nvim
 export EDITOR="$VISUAL"
-
-## May as well use vim mode to edit in the terminal too :)
-set editing-mode vi
-## Reuduce time when hit escape to 0.1sec
-export KEYTIMEOUT=1
-
-
-#vim mode set esc . to be same as in emacs
-bindkey -v
-bindkey "\e." insert-last-word
 
 # make sure vim doesn't hang on ctl s : https://unix.stackexchange.com/a/72092
 stty -ixon
 
 HISTCONTROL=ignorespace
 
+alias vim=/usr/local/bin/vim
+alias v=nvim
+alias refresh='source ~/.bashrc'
+
+new_tmux_session() {
+  tmux new -s "$1"
+}
+
+alias tn=new_tmux_session
+
+attach_tmux_session() {
+  tmux attach -t "$1"
+}
+
+alias ta=attach_tmux_session
+
+list_tmux_sessions() {
+  tmux ls
+}
+
+alias tl=list_tmux_sessions
+
+show_help() {
+  echo "
+  ctrl-a      - move the cursor to the beginning of the current line
+  ctrl-e      - move the cursor to the end of the current line
+  alt-b       - move the cursor backwards one word
+  alt-f       - move the cursor forward one word
+  ctrl-k      - delete from cursor to the end of the line
+  ctrl-u      - delete from cursor to the beginning of the line
+  alt-d       - delete the word in front of the cursor
+  ctrl-w      - delete the word behind of the cursor
+
+  pbcopy      - copy to clipboard
+  pbpaste     - paste from clipboard
+  cd -        - change into most recently accessed directory
+  pushd <dir> - add current directory to stack & move
+  popd <dir>  - move to top directory in stack
+
+  ctrl-z      - stops current job
+  fg          - moves most recent job to foreground
+  bg          - moves most recent job to background
+  disown -h   - detach process from shell
+  jobs -l     - lists jobs
+  "
+}
+
+alias hint=show_help
+
+git_hint() {
+  echo "
+  git pull origin master --rebase                                                   - whilst on you're on your feature branch
+  git reset --hard origin/[branch]                                                  - reset branch after someone else has git push -f
+  git fetch -p && git branch -vv | awk '/: gone]/{print \$1}' | xargs git branch -D - remove local branches that are deleted on remote
+  git commit -a --amend -C head
+  "
+}
+
+alias git_hint=git_hint
+
+it_log() {
+  git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%ad) %C(bold blue)<%an>%Creset' --abbrev-commit
+}
+
+alias gl=git_log
+
+alias prettyjson='python -m json.tool'
+
+alias lein_what=lein_what
+
+lein_what() {
+  echo "
+  ancient      - A Leiningen plugin to check your project for outdated dependencies and plugins.
+  eastwood     - Eastwood is a Clojure lint tool that uses the tools.analyzer and tools.analyzer.jvm libraries to inspect namespaces and report possible problems.
+  kibit        - kibit is a static code analyzer for Clojure, ClojureScript, cljx and other Clojure variants.
+  bikeshed     - A Leiningen plugin designed to tell you your code is bad, and that you should feel bad.
+  deps-tree    - Prints a nicely formatted tree of all project dependencies
+  cljfmt check - A tool for formatting Clojure code
+  yagni        - Yagni is a static code analyzer that helps you find unused code in your applications and libraries.
+  "
+}
+
 plugins=(
   git
-  zsh-z
 )
